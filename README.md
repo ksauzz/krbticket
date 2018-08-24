@@ -1,6 +1,6 @@
 # Kerberos Ticket Manager
 
-Simple kinit wrapper for updating Kerberos ticket periodically
+Simple kinit wrapper to update Kerberos ticket periodically for long running application.
 
 ## Getting Started
 
