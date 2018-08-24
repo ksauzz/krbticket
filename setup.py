@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="krbticket",
-    version="0.0.1",
+    version="0.0.1.1",
     author="Kazuhiro Suzuki",
     author_email="ksauzzmsg@gmail.com",
     description="Kerberos Ticket Manager",
