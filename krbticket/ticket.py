@@ -6,6 +6,7 @@ import time
 import threading
 import logging
 
+
 class NoCredentialFound(Exception):
     pass
 
@@ -19,7 +20,6 @@ class KrbTicketUpdater(threading.Thread):
         self.stop_event = threading.Event()
         self.daemon = True
 
-
     def run(self):
         logging.info("Ticket updater start...")
         while True:
@@ -29,7 +29,6 @@ class KrbTicketUpdater(threading.Thread):
             logging.debug("Trying to update ticket...")
             self.ticket.maybe_update()
             time.sleep(self.interval)
-
 
     def stop(self):
         logging.debug("Stopping ticket updater...")
@@ -48,10 +47,8 @@ class KrbTicket():
         self.service_principal = service_principal
         self.renew_expires = renew_expires
 
-
     def updater(self, interval=60):
         return KrbTicketUpdater(self, interval=interval)
-
 
     def maybe_update(self):
         self.reload()
@@ -62,21 +59,19 @@ class KrbTicket():
         elif self.need_renewal():
             self.renewal()
 
-
     def renewal(self):
         logging.info("Renewing ticket for {}...".format(self.principal))
         KrbCommand.renewal(self.config)
         self.reload()
-
 
     def reinit(self):
         logging.info("Reinitialize ticket for {}...".format(self.principal))
         KrbCommand.kinit(self.config)
         self.reload()
 
-
     def reload(self):
-        logging.debug("Reloading ticket attributes from {}...".format(self.file))
+        logging.debug(
+            "Reloading ticket attributes from {}...".format(self.file))
 
         new_ticket = KrbTicket.get_by_config(self.config)
         self.file = new_ticket.file
@@ -86,17 +81,14 @@ class KrbTicket():
         self.service_principal = new_ticket.service_principal
         self.renew_expires = new_ticket.renew_expires
 
-
     def need_renewal(self):
         return self.expires < self.config.renewal_threshold + datetime.now()
-
 
     def need_reinit(self):
         if self.renew_expires:
             return self.renew_expires < self.config.renewal_threshold + datetime.now()
         else:
             return self.need_renewal()
-
 
     def __str__(self):
         super_str = super(KrbTicket, self).__str__()
@@ -105,29 +97,24 @@ class KrbTicket():
                .format(super_str, self.file, self.principal, self.starting,
                        self.expires, self.service_principal, self.renew_expires)
 
-
     @staticmethod
     def cache_exists():
         return os.path.isfile("/tmp/krb5cc_{}".format(os.getuid()))
-
 
     @staticmethod
     def init(principal, keytab, kinit_bin="kinit", klist_bin="klist"):
         config = KrbConfig(principal, keytab, kinit_bin, klist_bin)
         return KrbTicket.init_by_config(config)
 
-
     @staticmethod
     def init_by_config(config):
         KrbCommand.kinit(config)
         return KrbTicket.get_by_config(config)
 
-
     @staticmethod
     def get(principal, keytab, kinit_bin="kinit", klist_bin="klist"):
         config = KrbConfig(principal, keytab, kinit_bin, klist_bin)
         return KrbTicket.get_by_config(config)
-
 
     @staticmethod
     def get_by_config(config):
@@ -136,12 +123,10 @@ class KrbTicket():
         else:
             raise NoCredentialFound()
 
-
     @staticmethod
     def parse_from_klist(config, output):
         if not output:
             return KrbTicket(config)
-
 
         lines = output.splitlines()
         file = lines[0].split(':')[2]
@@ -152,29 +137,28 @@ class KrbTicket():
         else:
             renew_expires = None
 
-
         def parseDatetime(str):
             if str:
                 return datetime.strptime(str, '%m/%d/%Y %H:%M:%S')
 
         return KrbTicket(
-                config,
-                file,
-                principal,
-                parseDatetime(starting),
-                parseDatetime(expires),
-                service_principal,
-                parseDatetime(renew_expires))
+            config,
+            file,
+            principal,
+            parseDatetime(starting),
+            parseDatetime(expires),
+            service_principal,
+            parseDatetime(renew_expires))
 
 
 class KrbConfig():
     def __init__(self, principal=None, keytab=None, kinit_bin="kinit",
-                         klist_bin="klist", renewal_threshold=timedelta(minutes=30)):
-        self.principal=principal
-        self.keytab=keytab
-        self.kinit_bin=kinit_bin
-        self.klist_bin=klist_bin
-        self.renewal_threshold=renewal_threshold
+                 klist_bin="klist", renewal_threshold=timedelta(minutes=30)):
+        self.principal = principal
+        self.keytab = keytab
+        self.kinit_bin = kinit_bin
+        self.klist_bin = klist_bin
+        self.renewal_threshold = renewal_threshold
 
 
 class KrbCommand():
@@ -189,7 +173,6 @@ class KrbCommand():
 
         KrbCommand._call(config, commands)
 
-
     @staticmethod
     def renewal(config):
         commands = []
@@ -202,13 +185,11 @@ class KrbCommand():
 
         KrbCommand._call(config, commands)
 
-
     @staticmethod
     def klist(config):
         commands = []
         commands.append(config.klist_bin)
         return KrbCommand._call(config, commands)
-
 
     @staticmethod
     def _call(config, commands):
