@@ -12,7 +12,9 @@ class NoCredentialFound(Exception):
 
 
 class KrbTicketUpdater(threading.Thread):
-    def __init__(self, ticket, interval=60):
+    DEFAULT_INTERVAL = 60 * 10
+
+    def __init__(self, ticket, interval=DEFAULT_INTERVAL):
         super(KrbTicketUpdater, self).__init__()
 
         self.ticket = ticket
@@ -47,7 +49,10 @@ class KrbTicket():
         self.service_principal = service_principal
         self.renew_expires = renew_expires
 
-    def updater(self, interval=60):
+    def updater_start(self, interval=KrbTicketUpdater.DEFAULT_INTERVAL):
+        self.updater(interval=interval).start()
+
+    def updater(self, interval=KrbTicketUpdater.DEFAULT_INTERVAL):
         return KrbTicketUpdater(self, interval=interval)
 
     def maybe_update(self):
