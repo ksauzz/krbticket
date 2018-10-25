@@ -144,7 +144,7 @@ class KrbTicket():
 
         def parseDatetime(str):
             if str:
-                return datetime.strptime(str, '%m/%d/%Y %H:%M:%S')
+                return datetime.strptime(str, '%m/%d/%y %H:%M:%S')
 
         return KrbTicket(
             config,
@@ -199,4 +199,6 @@ class KrbCommand():
     @staticmethod
     def _call(config, commands):
         logging.debug("Executing {}".format(" ".join(commands)))
-        return subprocess.check_output(commands, universal_newlines=True)
+        custom_env = os.environ.copy()
+        custom_env["LANG"] = "C"
+        return subprocess.check_output(commands, universal_newlines=True, env=custom_env)
