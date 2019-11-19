@@ -158,12 +158,15 @@ class KrbTicket():
 
 class KrbConfig():
     def __init__(self, principal=None, keytab=None, kinit_bin="kinit",
-                 klist_bin="klist", renewal_threshold=timedelta(minutes=30)):
+                 klist_bin="klist", kdestroy_bin="kdestroy",
+                 renewal_threshold=timedelta(minutes=30), ticket_lifetime=None):
         self.principal = principal
         self.keytab = keytab
         self.kinit_bin = kinit_bin
         self.klist_bin = klist_bin
+        self.kdestroy_bin = kdestroy_bin
         self.renewal_threshold = renewal_threshold
+        self.ticket_lifetime = ticket_lifetime
 
 
 class KrbCommand():
@@ -171,6 +174,9 @@ class KrbCommand():
     def kinit(config):
         commands = []
         commands.append(config.kinit_bin)
+        if config.ticket_lifetime:
+            commands.append("-l")
+            commands.append(config.ticket_lifetime)
         commands.append("-k")
         commands.append("-t")
         commands.append(config.keytab)
@@ -194,6 +200,12 @@ class KrbCommand():
     def klist(config):
         commands = []
         commands.append(config.klist_bin)
+        return KrbCommand._call(config, commands)
+
+    @staticmethod
+    def kdestroy(config):
+        commands = []
+        commands.append(config.kdestroy_bin)
         return KrbCommand._call(config, commands)
 
     @staticmethod

@@ -2,3 +2,7 @@ build
 dist
 *egg-info
 __pycache__
+venv
+.venv
+.coverage
+htmlcov
