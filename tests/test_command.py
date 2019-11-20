@@ -7,4 +7,3 @@ def test_commands(config):
     KrbCommand.kinit(config)
     KrbCommand.renewal(config)
     KrbCommand.klist(config)
-

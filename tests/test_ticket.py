@@ -18,8 +18,8 @@ def test_get(config):
         KrbTicket.get(DEFAULT_PRINCIPAL, DEFAULT_KEYTAB)
 
     assert_ticket(
-            KrbTicket.init_by_config(config),
-            KrbTicket.get(DEFAULT_KEYTAB, DEFAULT_PRINCIPAL))
+        KrbTicket.init_by_config(config),
+        KrbTicket.get(DEFAULT_KEYTAB, DEFAULT_PRINCIPAL))
 
 
 def test_ticket(config):
