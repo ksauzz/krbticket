@@ -1,5 +1,7 @@
 # Kerberos Ticket Manager
 
+![](https://github.com/ksauzz/krbticket/workflows/test/badge.svg)
+
 Simple kinit wrapper to update Kerberos ticket periodically for long running application.
 
 ## Getting Started
