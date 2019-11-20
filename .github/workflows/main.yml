@@ -38,4 +38,10 @@ jobs:
         pytest
       env:
         KRB5_CONFIG: tests/conf/krb5.conf.local
+    - name: Upload coverage
+      uses: actions/upload-artifact@master
+      with:
+        name: coverage
+        path: htmlcov
+
 
