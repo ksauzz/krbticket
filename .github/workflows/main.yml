@@ -1,4 +1,4 @@
-name: krbticket test
+name: test
 
 on: [push]
 
