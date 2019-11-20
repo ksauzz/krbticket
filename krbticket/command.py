@@ -50,7 +50,7 @@ class KrbCommand():
         def retriable_call():
             logging.debug("Executing {}".format(" ".join(commands)))
             custom_env = os.environ.copy()
-            custom_env["LANG"] = "C"
+            custom_env["LC_ALL"] = "C"
             return subprocess.check_output(commands, universal_newlines=True, env=custom_env)
 
         return retriable_call()
