@@ -1,11 +1,13 @@
 import setuptools
 
 with open("README.md", "r") as fh:
-        long_description = fh.read()
+    long_description = fh.read()
+
 
 def read_requirements(file):
     with open(file, "r") as f:
         return f.read().split()
+
 
 install_requires = read_requirements("requirements.txt")
 test_require = read_requirements("requirements-test.txt")
@@ -32,4 +34,3 @@ setuptools.setup(
         "Operating System :: POSIX",
     ],
 )
-

@@ -103,7 +103,6 @@ class KrbTicket():
                .format(super_str, self.file, self.principal, self.starting,
                        self.expires, self.service_principal, self.renew_expires)
 
-
     @staticmethod
     def cache_exists(config):
         return os.path.isfile(config.ccache_name)

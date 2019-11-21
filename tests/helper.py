@@ -16,13 +16,13 @@ def assert_ticket(t1, t2):
 
 def default_config():
     return KrbConfig(
-            DEFAULT_PRINCIPAL,
-            DEFAULT_KEYTAB,
-            ticket_lifetime=DEFAULT_TICKET_LIFETIME,
-            retry_options={
-                'wait_exponential_multiplier': 100,
-                'wait_exponential_max': 1000,
-                'stop_max_attempt_number': 3 })
+        DEFAULT_PRINCIPAL,
+        DEFAULT_KEYTAB,
+        ticket_lifetime=DEFAULT_TICKET_LIFETIME,
+        retry_options={
+            'wait_exponential_multiplier': 100,
+            'wait_exponential_max': 1000,
+            'stop_max_attempt_number': 3})
 
 
 @pytest.fixture
