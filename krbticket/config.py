@@ -12,7 +12,7 @@ class KrbConfig():
                  retry_options={
                      'wait_exponential_multiplier': 1000,
                      'wait_exponential_max': 30000,
-                     'stop_max_attempt_number': 10 }):
+                     'stop_max_attempt_number': 10}):
         self.principal = principal
         self.keytab = keytab
         self.kinit_bin = kinit_bin
@@ -23,11 +23,10 @@ class KrbConfig():
         self.retry_options = retry_options
         self.ccache_name = ccache_name if ccache_name else self._ccache_name()
 
-
     def _ccache_name(self):
         if multiprocessing.current_process().name == 'MainProcess':
             if os.environ.get('KRB5CCNAME'):
-                return os.environ.get('KRB5CCNAME');
+                return os.environ.get('KRB5CCNAME')
             else:
                 return "/tmp/krb5cc_{}".format(os.getuid())
         else:
