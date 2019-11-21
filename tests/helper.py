@@ -14,8 +14,7 @@ def assert_ticket(t1, t2):
     assert t1.service_principal == t2.service_principal
 
 
-@pytest.fixture
-def config():
+def default_config():
     return KrbConfig(
             DEFAULT_PRINCIPAL,
             DEFAULT_KEYTAB,
@@ -24,3 +23,8 @@ def config():
                 'wait_exponential_multiplier': 100,
                 'wait_exponential_max': 1000,
                 'stop_max_attempt_number': 3 })
+
+
+@pytest.fixture
+def config():
+    return default_config()

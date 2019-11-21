@@ -1,13 +1,38 @@
 from krbticket import KrbConfig, KrbCommand
-from helper import config
+from helper import *
 import subprocess
+from multiprocessing import Process
+import pytest
 
 
-def test_commands(config):
+def _test_commands(config):
     KrbCommand.kdestroy(config)
     KrbCommand.kinit(config)
     KrbCommand.renewal(config)
     KrbCommand.klist(config)
+    KrbCommand.kdestroy(config)
+
+
+def test_commands(config):
+    _test_commands(config)
+
+
+def test_multiprocess_ccache(config):
+    KrbCommand.kdestroy(config)
+
+    def run():
+        conf = default_config()
+        assert conf.ccache_name.startswith(config.ccache_name)
+        assert conf.ccache_name != config.ccache_name
+        _test_commands(conf)
+
+    processes = [Process(target=run) for i in range(5)]
+    for p in processes:
+        p.start()
+
+    for p in processes:
+        p.join()
+        assert not p.exitcode
 
 
 def test_retry_command(config, mocker):
