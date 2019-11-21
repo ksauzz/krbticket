@@ -54,7 +54,16 @@ class KrbCommand():
     @staticmethod
     def _call(config, commands):
 
-        @retry(**config.retry_options)
+
+        def error_on_retry(exception):
+            # will not retry if command is not found.
+            if type(exception) == FileNotFoundError:
+                raise exception
+
+            return True
+
+        retry_options = { **config.retry_options, **{ 'retry_on_exception': error_on_retry }}
+        @retry(**retry_options)
         def retriable_call():
             logging.debug("Executing {}".format(" ".join(commands)))
             custom_env = os.environ.copy()
