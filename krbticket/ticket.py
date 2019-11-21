@@ -103,9 +103,10 @@ class KrbTicket():
                .format(super_str, self.file, self.principal, self.starting,
                        self.expires, self.service_principal, self.renew_expires)
 
+
     @staticmethod
-    def cache_exists():
-        return os.path.isfile("/tmp/krb5cc_{}".format(os.getuid()))
+    def cache_exists(config):
+        return os.path.isfile(config.ccache_name)
 
     @staticmethod
     def init(principal, keytab, kinit_bin="kinit", klist_bin="klist"):
@@ -124,7 +125,7 @@ class KrbTicket():
 
     @staticmethod
     def get_by_config(config):
-        if KrbTicket.cache_exists():
+        if KrbTicket.cache_exists(config):
             return KrbTicket.parse_from_klist(config, KrbCommand.klist(config))
         else:
             raise NoCredentialFound()
