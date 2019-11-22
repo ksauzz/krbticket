@@ -12,6 +12,9 @@ class KrbCommand():
         if config.ticket_lifetime:
             commands.append("-l")
             commands.append(config.ticket_lifetime)
+        if config.ticket_renewable_lifetime:
+            commands.append("-r")
+            commands.append(config.ticket_renewable_lifetime)
         commands.append("-c")
         commands.append(config.ccache_name)
         commands.append("-k")
@@ -27,9 +30,6 @@ class KrbCommand():
         commands.append(config.kinit_bin)
         commands.append("-c")
         commands.append(config.ccache_name)
-        commands.append("-k")
-        commands.append("-t")
-        commands.append(config.keytab)
         commands.append("-R")
         commands.append(config.principal)
 

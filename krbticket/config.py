@@ -8,6 +8,7 @@ class KrbConfig():
                  klist_bin="klist", kdestroy_bin="kdestroy",
                  renewal_threshold=timedelta(minutes=30),
                  ticket_lifetime=None,
+                 ticket_renewable_lifetime=None,
                  ccache_name=None,
                  retry_options={
                      'wait_exponential_multiplier': 1000,
@@ -20,6 +21,7 @@ class KrbConfig():
         self.kdestroy_bin = kdestroy_bin
         self.renewal_threshold = renewal_threshold
         self.ticket_lifetime = ticket_lifetime
+        self.ticket_renewable_lifetime = ticket_renewable_lifetime
         self.retry_options = retry_options
         self.ccache_name = ccache_name if ccache_name else self._ccache_name()
 

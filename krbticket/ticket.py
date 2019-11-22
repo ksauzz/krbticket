@@ -86,6 +86,8 @@ class KrbTicket():
         self.expires = new_ticket.expires
         self.service_principal = new_ticket.service_principal
         self.renew_expires = new_ticket.renew_expires
+        logging.debug(
+            "Reloaded ticket attributes: {}...".format(self))
 
     def need_renewal(self):
         return self.expires < self.config.renewal_threshold + datetime.now()
@@ -138,7 +140,7 @@ class KrbTicket():
         file = lines[0].split(':')[2]
         principal = lines[1].split(':')[1].strip()
         starting, expires, service_principal = lines[4].strip().split('  ')
-        if len(lines) > 6:
+        if len(lines) > 5:
             renew_expires = lines[5].strip().replace('renew until ', '')
         else:
             renew_expires = None

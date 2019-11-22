@@ -59,3 +59,4 @@ def test_no_retry_when_filenotfound(config, mocker):
         fail()
     except FileNotFoundError:
         assert patcher.call_count == 1
+
