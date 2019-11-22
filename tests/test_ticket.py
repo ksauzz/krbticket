@@ -1,6 +1,7 @@
 from krbticket import KrbTicket, KrbCommand
 from krbticket.ticket import NoCredentialFound
 from helper import *
+from datetime import datetime
 import time
 
 
@@ -31,6 +32,7 @@ def test_ticket(config):
     assert ticket.starting
     assert ticket.expires
     assert ticket.service_principal
+    assert ticket.renew_expires
 
 
 def test_updater(config):
@@ -44,13 +46,51 @@ def test_updater(config):
 
 
 def test_renewal(config):
+    """
+    This test assumes:
+    - 1 sec renewal threshold
+    - 2 sec ticket lifetime
+    - 4 sed renewal ticket lifetime
+    """
     KrbCommand.kdestroy(config)
     ticket = KrbTicket.init_by_config(config)
+
     starting = ticket.starting
     expires = ticket.expires
-    updater = ticket.updater(interval=1)
+    renew_expires = ticket.renew_expires
+
+    updater = ticket.updater(interval=0.5)
     updater.start()
+
+    # expect ticket renewal
     time.sleep(2)
-    updater.stop()
     assert ticket.starting > starting
     assert ticket.expires > expires
+    assert ticket.renew_expires == renew_expires
+
+    starting = ticket.starting
+    expires = ticket.expires
+
+    # expect ticket re-initialize
+    time.sleep(2)
+    assert ticket.starting > starting
+    assert ticket.expires > expires
+    assert ticket.renew_expires > renew_expires
+    updater.stop()
+
+
+def test_parse_klist_output(config):
+    output = """
+Ticket cache: FILE:/tmp/krb5cc_1000
+Default principal: user@EXAMPLE.COM
+
+Valid starting     Expires            Service principal
+11/22/19 00:23:10  11/22/19 00:23:12  krbtgt/EXAMPLE.COM@EXAMPLE.COM
+        renew until 12/20/19 00:23:10
+""".strip()
+    ticket = KrbTicket.parse_from_klist(config, output)
+    assert ticket.principal == 'user@EXAMPLE.COM'
+    assert ticket.service_principal == 'krbtgt/EXAMPLE.COM@EXAMPLE.COM'
+    assert ticket.starting == datetime(2019, 11, 22, 0, 23, 10)
+    assert ticket.expires == datetime(2019, 11, 22, 0, 23, 12)
+    assert ticket.renew_expires == datetime(2019, 12, 20, 0, 23, 10)
