@@ -98,6 +98,7 @@ class KrbTicket():
         else:
             return self.need_renewal()
 
+
     def __str__(self):
         super_str = super(KrbTicket, self).__str__()
         return "{}: file={}, principal={}, starting={}, expires={}," \
@@ -105,13 +106,14 @@ class KrbTicket():
                .format(super_str, self.file, self.principal, self.starting,
                        self.expires, self.service_principal, self.renew_expires)
 
+
     @staticmethod
     def cache_exists(config):
         return os.path.isfile(config.ccache_name)
 
     @staticmethod
-    def init(principal, keytab, kinit_bin="kinit", klist_bin="klist"):
-        config = KrbConfig(principal, keytab, kinit_bin, klist_bin)
+    def init(principal, keytab, **kwargs):
+        config = KrbConfig(principal, keytab, **kwargs)
         return KrbTicket.init_by_config(config)
 
     @staticmethod
@@ -120,8 +122,8 @@ class KrbTicket():
         return KrbTicket.get_by_config(config)
 
     @staticmethod
-    def get(principal, keytab, kinit_bin="kinit", klist_bin="klist"):
-        config = KrbConfig(principal, keytab, kinit_bin, klist_bin)
+    def get(principal, keytab, **kwargs):
+        config = KrbConfig(principal, keytab, **kwargs)
         return KrbTicket.get_by_config(config)
 
     @staticmethod
