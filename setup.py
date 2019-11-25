@@ -17,7 +17,7 @@ extras = {
 
 setuptools.setup(
     name="krbticket",
-    version="0.0.1.3",
+    use_scm_version=True,
     author="Kazuhiro Suzuki",
     author_email="ksauzzmsg@gmail.com",
     description="Kerberos Ticket Manager",
@@ -25,6 +25,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/ksauzz/krbticket",
     packages=setuptools.find_packages(),
+    setup_requires=['setuptools_scm'],
     install_requires=install_requires,
     tests_require=test_require,
     extras_require=extras,
