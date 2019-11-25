@@ -1,27 +1,23 @@
-name: test
+name: release
 
 on:
   push:
-    branches-ignore:
+    branches:
       - release
-
 jobs:
-  test:
+  release:
     runs-on: ubuntu-latest
     services:
       kerberos:
         image: ksauzz/docker-krb5:0.0.1
         ports:
           - 88:88
-    strategy:
-      matrix:
-        python-version: [3.5, 3.6, 3.7, 3.8]
     steps:
     - uses: actions/checkout@v1
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python 3.7
       uses: actions/setup-python@v1
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: 3.7
     - name: Install dependencies
       run: |
         sudo -E apt-get install -y --no-install-recommends krb5-user
@@ -46,3 +42,27 @@ jobs:
       with:
         name: coverage
         path: htmlcov
+    - name: Build distributions
+      run: |
+        pip install setuptools wheel
+        python setup.py sdist bdist_wheel
+    - name: Publish package
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        user: __token__
+        password: ${{ secrets.pypi_password }}
+    - name: Lookup tag
+      run: |
+        tag=$(git describe HEAD --tags)
+        echo ::set-output name=tag::${tag}
+      id: git_desc
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ steps.git_desc.outputs.tag }}
+        release_name: Release ${{ steps.git_desc.outputs.tag }}
+        draft: false
+        prerelease: false
