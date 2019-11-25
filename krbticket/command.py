@@ -59,6 +59,7 @@ class KrbCommand():
             if type(exception) == FileNotFoundError:
                 raise exception
 
+            logging.warning("the command failed. attempting retry... retry_options={}".format(config.retry_options))
             return True
 
         retry_options = {**config.retry_options, **{'retry_on_exception': error_on_retry}}
