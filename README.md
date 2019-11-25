@@ -24,15 +24,14 @@ krbticket utilizes retrying, and you can pass the options using `retry_options` 
 - stop_max_attempt_number = 10
 
 ```
-from krbticket import KrbTicket, KrbConfig
+from krbticket import KrbTicket
 
 retry_options = {
   'wait_exponential_multiplier': 1000,
   'wait_exponential_multiplier': 10000,
   'stop_max_attempt_number': 5
 }
-config = KrbConfig("<principal>", "<keytab path>", retry_options=retry_options)
-ticket = KrbTicket.init_by_conf(config)
+ticket = KrbTicket.init("<principal>", "<keytab path>", retry_options=retry_options)
 ticket.updater_start()
 ```
 
