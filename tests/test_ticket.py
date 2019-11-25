@@ -8,9 +8,17 @@ import time
 def test_init(config):
     KrbCommand.kdestroy(config)
     ticket1 = KrbTicket.init_by_config(config)
-    ticket2 = KrbTicket.init(DEFAULT_PRINCIPAL, DEFAULT_KEYTAB)
-    assert ticket1.principal == ticket2.principal
-    assert ticket1.file == ticket2.file
+    ticket2 = KrbTicket.init(
+            DEFAULT_PRINCIPAL,
+            DEFAULT_KEYTAB,
+            renewal_threshold=timedelta(seconds=DEFAULT_TICKET_RENEWAL_THRESHOLD_SEC),
+            ticket_lifetime=DEFAULT_TICKET_LIFETIME,
+            ticket_renewable_lifetime=DEFAULT_TICKET_RENEWABLE_LIFETIME,
+            retry_options={
+                'wait_exponential_multiplier': 100,
+                'wait_exponential_max': 1000,
+                'stop_max_attempt_number': 3})
+    assert_ticket(ticket1, ticket2)
 
 
 def test_get(config):
@@ -20,7 +28,16 @@ def test_get(config):
 
     assert_ticket(
         KrbTicket.init_by_config(config),
-        KrbTicket.get(DEFAULT_KEYTAB, DEFAULT_PRINCIPAL))
+        KrbTicket.get(
+            DEFAULT_PRINCIPAL,
+            DEFAULT_KEYTAB,
+            renewal_threshold=timedelta(seconds=DEFAULT_TICKET_RENEWAL_THRESHOLD_SEC),
+            ticket_lifetime=DEFAULT_TICKET_LIFETIME,
+            ticket_renewable_lifetime=DEFAULT_TICKET_RENEWABLE_LIFETIME,
+            retry_options={
+                'wait_exponential_multiplier': 100,
+                'wait_exponential_max': 1000,
+                'stop_max_attempt_number': 3}))
 
 
 def test_ticket(config):
