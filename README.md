@@ -1,6 +1,6 @@
 # Kerberos Ticket Manager
 
-![](https://github.com/ksauzz/krbticket/workflows/test/badge.svg)
+![build status](https://github.com/ksauzz/krbticket/workflows/test/badge.svg)
 
 Simple kinit wrapper to update Kerberos ticket periodically for long running application.
 
@@ -17,7 +17,7 @@ ticket.updater_start()
 
 ### Retry
 
-krbticket utilizes retrying, and you can pass the options using `retry_options` of KrbConfig. The dafault values are:
+krbticket supports retry feature utilizing [retrying](https://github.com/rholder/retrying) which provides various retry strategy. To change the behavior, pass the options using `retry_options` of KrbConfig. The dafault values are:
 
 - wait_exponential_multiplier = 1000
 - wait_exponential_multiplier = 30000
@@ -35,12 +35,14 @@ ticket = KrbTicket.init("<principal>", "<keytab path>", retry_options=retry_opti
 ticket.updater_start()
 ```
 
-see: https://github.com/rholder/retrying
+### Update Interval
+
+TBD
 
 ## Test
 
 ```
 docker run --rm -p 88:88 ksauzz/docker-krb5:0.0.1
-pip install -r requirements-test.txt
+pip install -r requirements-test.txt -r requirements.txt
 KRB5_CONFIG=tests/conf/krb5.conf.local pytest
 ```
