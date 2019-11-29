@@ -46,8 +46,10 @@ def test_multiprocess_ccache(config):
 
     def run():
         conf = default_config()
-        assert conf.ccache_name.startswith(config.ccache_name)
         assert conf.ccache_name != config.ccache_name
+        assert os.environ['KRB5CCNAME'] == conf.ccache_name
+        # check if KRB5CCNAME is recognized kerberos commands
+        conf.ccache_name = None
         _test_commands(conf)
 
     processes = [Process(target=run) for i in range(5)]

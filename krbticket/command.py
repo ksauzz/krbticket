@@ -15,8 +15,9 @@ class KrbCommand():
         if config.ticket_renewable_lifetime:
             commands.append("-r")
             commands.append(config.ticket_renewable_lifetime)
-        commands.append("-c")
-        commands.append(config.ccache_name)
+        if config.ccache_name:
+            commands.append("-c")
+            commands.append(config.ccache_name)
         commands.append("-k")
         if config.keytab:
             commands.append("-t")
@@ -29,8 +30,9 @@ class KrbCommand():
     def renewal(config):
         commands = []
         commands.append(config.kinit_bin)
-        commands.append("-c")
-        commands.append(config.ccache_name)
+        if config.ccache_name:
+            commands.append("-c")
+            commands.append(config.ccache_name)
         commands.append("-R")
         commands.append(config.principal)
 
@@ -40,16 +42,18 @@ class KrbCommand():
     def klist(config):
         commands = []
         commands.append(config.klist_bin)
-        commands.append("-c")
-        commands.append(config.ccache_name)
+        if config.ccache_name:
+            commands.append("-c")
+            commands.append(config.ccache_name)
         return KrbCommand._call(config, commands)
 
     @staticmethod
     def kdestroy(config):
         commands = []
         commands.append(config.kdestroy_bin)
-        commands.append("-c")
-        commands.append(config.ccache_name)
+        if config.ccache_name:
+            commands.append("-c")
+            commands.append(config.ccache_name)
         return KrbCommand._call(config, commands)
 
     @staticmethod
