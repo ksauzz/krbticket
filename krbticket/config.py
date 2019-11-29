@@ -31,6 +31,7 @@ class KrbConfig():
         return "{}: principal={}, keytab={}, kinit_bin={}," \
                " klist_bin={}, kdestroy_bin={}, " \
                " renewal_threshold={}, ticket_lifetime={}, " \
+               " ticket_renewable_lifetime={}, " \
                " retry_options={}, ccache_name={}, " \
                .format(super_str, self.principal, self.keytab, self.kinit_bin, self.klist_bin, self.kdestroy_bin, self.renewal_threshold, self.ticket_lifetime, self.ticket_renewable_lifetime, self.retry_options, self.ccache_name)
 
