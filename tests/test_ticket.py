@@ -3,9 +3,40 @@ from krbticket.ticket import NoCredentialFound
 from helper import *
 from datetime import datetime
 import time
+import os
+import subprocess
 
 
 def test_init(config):
+    KrbCommand.kdestroy(config)
+    KrbTicket.init(DEFAULT_PRINCIPAL, DEFAULT_KEYTAB)
+
+
+def test_init_with_keytab_env(config):
+    KrbCommand.kdestroy(config)
+    os.environ['KRB5_KTNAME'] = config.keytab
+    config.keytab = None
+    KrbTicket.init(DEFAULT_PRINCIPAL)
+    del os.environ['KRB5_KTNAME']
+    assert not os.environ.get('KRB5_KTNAME')
+
+
+def test_init_without_keytab_env(config):
+    KrbCommand.kdestroy(config)
+    assert not os.environ.get('KRB5_KTNAME')
+    retry_options = {
+            'wait_exponential_multiplier': 100,
+            'wait_exponential_max': 1000,
+            'stop_max_attempt_number': 1 }
+    config.keytab = None
+    try:
+        KrbTicket.init(DEFAULT_PRINCIPAL, retry_options=retry_options)
+        pytest.fail()
+    except subprocess.CalledProcessError:
+        pass
+
+
+def test_init_with_config(config):
     KrbCommand.kdestroy(config)
     ticket1 = KrbTicket.init_by_config(config)
     ticket2 = KrbTicket.init(

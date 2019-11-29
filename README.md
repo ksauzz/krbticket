@@ -15,6 +15,8 @@ ticket = KrbTicket.init("<principal>", "<keytab path>")
 ticket.updater_start()
 ```
 
+If `keytab path` is not specifyed, kinit uses `KRB5_KTNAME` env, or `/etc/krb5.keytab` to find a keytab file. see: kerberos(1) and kinit(1).
+
 ### Retry
 
 krbticket supports retry feature utilizing [retrying](https://github.com/rholder/retrying) which provides various retry strategy. To change the behavior, pass the options using `retry_options` of KrbConfig. The dafault values are:

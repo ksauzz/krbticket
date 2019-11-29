@@ -112,8 +112,8 @@ class KrbTicket():
         return os.path.isfile(config.ccache_name)
 
     @staticmethod
-    def init(principal, keytab, **kwargs):
-        config = KrbConfig(principal, keytab, **kwargs)
+    def init(principal, keytab=None, **kwargs):
+        config = KrbConfig(principal=principal, keytab=keytab, **kwargs)
         return KrbTicket.init_by_config(config)
 
     @staticmethod
@@ -122,8 +122,8 @@ class KrbTicket():
         return KrbTicket.get_by_config(config)
 
     @staticmethod
-    def get(principal, keytab, **kwargs):
-        config = KrbConfig(principal, keytab, **kwargs)
+    def get(principal, keytab=None, **kwargs):
+        config = KrbConfig(principal=principal, keytab=keytab, **kwargs)
         return KrbTicket.get_by_config(config)
 
     @staticmethod
