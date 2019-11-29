@@ -90,25 +90,25 @@ def test_no_retry_when_filenotfound(config, mocker):
         keytab=DEFAULT_KEYTAB,
         ticket_lifetime=DEFAULT_TICKET_LIFETIME,
         ticket_renewable_lifetime=DEFAULT_TICKET_RENEWABLE_LIFETIME),
-    ['kinit', '-l', '2s', '-r', '4s', '-c', '/tmp/krb5cc_1000', '-k', '-t', './tests/conf/krb5.keytab', 'user@EXAMPLE.COM']),
+    ['kinit', '-l', '2s', '-r', '4s', '-c', DEFAULT_CCACHE_NAME, '-k', '-t', './tests/conf/krb5.keytab', 'user@EXAMPLE.COM']),
     (KrbConfig(
         principal='alice@EXAMPLE.COM',
         keytab=DEFAULT_KEYTAB,
         ticket_lifetime=DEFAULT_TICKET_LIFETIME,
         ticket_renewable_lifetime=DEFAULT_TICKET_RENEWABLE_LIFETIME),
-    ['kinit', '-l', '2s', '-r', '4s', '-c', '/tmp/krb5cc_1000', '-k', '-t', './tests/conf/krb5.keytab', 'alice@EXAMPLE.COM']),
+    ['kinit', '-l', '2s', '-r', '4s', '-c', DEFAULT_CCACHE_NAME, '-k', '-t', './tests/conf/krb5.keytab', 'alice@EXAMPLE.COM']),
     (KrbConfig(
         principal=DEFAULT_PRINCIPAL,
         keytab=None,
         ticket_lifetime='1s',
         ticket_renewable_lifetime=DEFAULT_TICKET_RENEWABLE_LIFETIME),
-    ['kinit', '-l', '1s', '-r', '4s', '-c', '/tmp/krb5cc_1000', '-k', 'user@EXAMPLE.COM']),
+    ['kinit', '-l', '1s', '-r', '4s', '-c', DEFAULT_CCACHE_NAME, '-k', 'user@EXAMPLE.COM']),
     (KrbConfig(
         principal=DEFAULT_PRINCIPAL,
         keytab=DEFAULT_KEYTAB,
         ticket_lifetime=DEFAULT_TICKET_LIFETIME,
         ticket_renewable_lifetime='6s'),
-    ['kinit', '-l', '2s', '-r', '6s', '-c', '/tmp/krb5cc_1000', '-k', '-t', './tests/conf/krb5.keytab', 'user@EXAMPLE.COM']),
+    ['kinit', '-l', '2s', '-r', '6s', '-c', DEFAULT_CCACHE_NAME, '-k', '-t', './tests/conf/krb5.keytab', 'user@EXAMPLE.COM']),
     ])
 def test_kinit_command(config, expected, mocker):
     mocker.patch.object(KrbCommand, '_call')
