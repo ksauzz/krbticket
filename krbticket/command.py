@@ -18,8 +18,9 @@ class KrbCommand():
         commands.append("-c")
         commands.append(config.ccache_name)
         commands.append("-k")
-        commands.append("-t")
-        commands.append(config.keytab)
+        if config.keytab:
+            commands.append("-t")
+            commands.append(config.keytab)
         commands.append(config.principal)
 
         KrbCommand._call(config, commands)

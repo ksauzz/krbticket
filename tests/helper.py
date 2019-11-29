@@ -1,12 +1,14 @@
 import pytest
 from krbticket import KrbConfig
 from datetime import timedelta
+import os
 
 DEFAULT_PRINCIPAL = 'user@EXAMPLE.COM'
 DEFAULT_KEYTAB = './tests/conf/krb5.keytab'
 DEFAULT_TICKET_RENEWAL_THRESHOLD_SEC = 1
 DEFAULT_TICKET_LIFETIME = '2s'
 DEFAULT_TICKET_RENEWABLE_LIFETIME = '4s'
+DEFAULT_CCACHE_NAME = '/tmp/krb5cc_{}'.format(os.getuid())
 
 
 def assert_ticket(t1, t2):
