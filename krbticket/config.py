@@ -1,8 +1,10 @@
 from datetime import timedelta
+import logging
 import multiprocessing
 import os
 
-import logging
+logger = logging.getLogger(__name__)
+
 
 class KrbConfig():
     def __init__(self, principal=None, keytab=None, kinit_bin="kinit",
@@ -44,6 +46,6 @@ class KrbConfig():
         # For multiprocess application. e.g. gunicorn
         new_ccname = "/tmp/krb5cc_{}_{}".format(os.getuid(), os.getpid())
         os.environ['KRB5CCNAME'] = new_ccname
-        logging.info("env KRB5CCNAME is updated to '{}' for multiprocessing".format(new_ccname))
+        logger.info("env KRB5CCNAME is updated to '{}' for multiprocessing".format(new_ccname))
 
         return os.environ.get('KRB5CCNAME')

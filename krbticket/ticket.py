@@ -1,12 +1,13 @@
 import os
 from datetime import datetime
+import logging
 import threading
 import time
-import logging
 
-from .config import KrbConfig
-from .command import KrbCommand
+from krbticket.command import KrbCommand
+from krbticket.config import KrbConfig
 
+logger = logging.getLogger(__name__)
 
 class NoCredentialFound(Exception):
     pass
@@ -24,17 +25,17 @@ class KrbTicketUpdater(threading.Thread):
         self.daemon = True
 
     def run(self):
-        logging.info("Ticket updater start...")
+        logger.info("Ticket updater start...")
         while True:
             if self.stop_event.is_set():
                 return
 
-            logging.debug("Trying to update ticket...")
+            logger.debug("Trying to update ticket...")
             self.ticket.maybe_update()
             time.sleep(self.interval)
 
     def stop(self):
-        logging.debug("Stopping ticket updater...")
+        logger.debug("Stopping ticket updater...")
         self.stop_event.set()
 
 
@@ -66,17 +67,17 @@ class KrbTicket():
             self.renewal()
 
     def renewal(self):
-        logging.info("Renewing ticket for {}...".format(self.principal))
+        logger.info("Renewing ticket for {}...".format(self.principal))
         KrbCommand.renewal(self.config)
         self.reload()
 
     def reinit(self):
-        logging.info("Reinitialize ticket for {}...".format(self.principal))
+        logger.info("Reinitialize ticket for {}...".format(self.principal))
         KrbCommand.kinit(self.config)
         self.reload()
 
     def reload(self):
-        logging.debug(
+        logger.debug(
             "Reloading ticket attributes from {}...".format(self.file))
 
         new_ticket = KrbTicket.get_by_config(self.config)
@@ -86,7 +87,7 @@ class KrbTicket():
         self.expires = new_ticket.expires
         self.service_principal = new_ticket.service_principal
         self.renew_expires = new_ticket.renew_expires
-        logging.debug(
+        logger.debug(
             "Reloaded ticket attributes: {}...".format(self))
 
     def need_renewal(self):

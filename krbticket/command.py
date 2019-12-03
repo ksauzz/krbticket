@@ -1,8 +1,9 @@
+import logging
 import os
 import subprocess
-import logging
 from retrying import retry
 
+logger = logging.getLogger(__name__)
 
 class KrbCommand():
     @staticmethod
@@ -64,13 +65,13 @@ class KrbCommand():
             if type(exception) == FileNotFoundError:
                 raise exception
 
-            logging.warning("the command failed. attempting retry... retry_options={}".format(config.retry_options))
+            logger.warning("the command failed. attempting retry... retry_options={}".format(config.retry_options))
             return True
 
         retry_options = {**config.retry_options, **{'retry_on_exception': error_on_retry}}
         @retry(**retry_options)
         def retriable_call():
-            logging.debug("Executing {}".format(" ".join(commands)))
+            logger.debug("Executing {}".format(" ".join(commands)))
             custom_env = os.environ.copy()
             custom_env["LC_ALL"] = "C"
             return subprocess.check_output(commands, universal_newlines=True, env=custom_env)
