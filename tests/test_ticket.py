@@ -12,6 +12,13 @@ def test_init(config):
     KrbTicket.init(DEFAULT_PRINCIPAL, DEFAULT_KEYTAB)
 
 
+def test_get_or_init(config):
+    KrbCommand.kdestroy(config)
+    ticket0 = KrbTicket.get_or_init(DEFAULT_PRINCIPAL, DEFAULT_KEYTAB)
+    ticket1 = KrbTicket.get_or_init(DEFAULT_PRINCIPAL, DEFAULT_KEYTAB)
+    assert_ticket(ticket0, ticket1)
+
+
 def test_init_with_keytab_env(config):
     KrbCommand.kdestroy(config)
     os.environ['KRB5_KTNAME'] = config.keytab
