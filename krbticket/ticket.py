@@ -123,6 +123,14 @@ class KrbTicket():
         return KrbTicket.get_by_config(config)
 
     @staticmethod
+    def get_or_init(principal, keytab=None, **kwargs):
+        config = KrbConfig(principal=principal, keytab=keytab, **kwargs)
+        try:
+            return KrbTicket.get_by_config(config)
+        except NoCredentialFound:
+            return KrbTicket.init_by_config(config)
+
+    @staticmethod
     def get(principal, keytab=None, **kwargs):
         config = KrbConfig(principal=principal, keytab=keytab, **kwargs)
         return KrbTicket.get_by_config(config)
