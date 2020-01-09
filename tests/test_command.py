@@ -40,18 +40,36 @@ def test_commands_without_keytab_env(config):
         pass
 
 
-def test_multiprocess_ccache(config):
+def test_multiprocessing_with_per_process_ccache(config):
     KrbCommand.kdestroy(config)
 
     def run():
         conf = default_config()
         assert conf.ccache_name != config.ccache_name
-        assert os.environ['KRB5CCNAME'] == conf.ccache_name
+        assert os.environ.get('KRB5CCNAME') == conf.ccache_name
         # check if KRB5CCNAME is recognized kerberos commands
         conf.ccache_name = None
         _test_commands(conf)
 
-    processes = [Process(target=run) for i in range(5)]
+    processes = [Process(target=run) for i in range(10)]
+    for p in processes:
+        p.start()
+
+    for p in processes:
+        p.join()
+        assert not p.exitcode
+
+
+def test_multiprocessing_without_per_process_ccache():
+    config = default_config(use_per_process_ccache=False)
+    KrbCommand.kdestroy(config)
+
+    def run():
+        conf = default_config(use_per_process_ccache=False)
+        assert conf.ccache_name == config.ccache_name
+        assert not os.environ.get('KRB5CCNAME')
+
+    processes = [Process(target=run) for i in range(10)]
     for p in processes:
         p.start()
 

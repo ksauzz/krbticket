@@ -5,6 +5,7 @@ from datetime import datetime
 import time
 import os
 import subprocess
+from multiprocessing import Process
 
 
 def test_init(config):
@@ -99,7 +100,7 @@ def test_updater(config):
     time.sleep(2)
     assert not updater.is_alive()
 
-
+@pytest.mark.parametrize('config', [ default_config(), default_config(use_per_process_ccache=False)])
 def test_renewal(config):
     """
     This test assumes:
@@ -132,6 +133,50 @@ def test_renewal(config):
     assert ticket.expires > expires
     assert ticket.renew_expires > renew_expires
     updater.stop()
+
+@pytest.mark.parametrize('config_str', [ 'default_config()', 'default_config(use_per_process_ccache=False)'])
+def test_multiprocessing_renewal(config_str, caplog):
+    KrbCommand.kdestroy(eval(config_str))
+    ticket = KrbTicket.init_by_config(eval(config_str))
+
+    def run():
+        """
+        This test assumes:
+        - 1 sec renewal threshold
+        - 2 sec ticket lifetime
+        - 4 sed renewal ticket lifetime
+        """
+
+        starting = ticket.starting
+        expires = ticket.expires
+        renew_expires = ticket.renew_expires
+
+        updater = ticket.updater(interval=0.5)
+        updater.start()
+
+        # expect ticket renewal
+        time.sleep(2)
+        assert ticket.starting > starting
+        assert ticket.expires > expires
+        assert ticket.renew_expires == renew_expires
+
+        starting = ticket.starting
+        expires = ticket.expires
+
+        # expect ticket re-initialize
+        time.sleep(2)
+        assert ticket.starting > starting
+        assert ticket.expires > expires
+        assert ticket.renew_expires > renew_expires
+        updater.stop()
+
+    processes = [Process(target=run) for i in range(10)]
+    for p in processes:
+        p.start()
+
+    for p in processes:
+        p.join()
+        assert not p.exitcode
 
 
 def test_parse_klist_output(config):

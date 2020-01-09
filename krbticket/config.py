@@ -13,6 +13,7 @@ class KrbConfig():
                  ticket_lifetime=None,
                  ticket_renewable_lifetime=None,
                  ccache_name=None,
+                 use_per_process_ccache=True,
                  retry_options={
                      'wait_exponential_multiplier': 1000,
                      'wait_exponential_max': 30000,
@@ -25,6 +26,7 @@ class KrbConfig():
         self.renewal_threshold = renewal_threshold
         self.ticket_lifetime = ticket_lifetime
         self.ticket_renewable_lifetime = ticket_renewable_lifetime
+        self.use_per_process_ccache = use_per_process_ccache
         self.retry_options = retry_options
         self.ccache_name = ccache_name if ccache_name else self._ccache_name()
 
@@ -35,18 +37,36 @@ class KrbConfig():
                " renewal_threshold={}, ticket_lifetime={}, " \
                " ticket_renewable_lifetime={}, " \
                " retry_options={}, ccache_name={}, " \
+               " use_per_process_ccache={}" \
                .format(super_str, self.principal, self.keytab, self.kinit_bin,
                        self.klist_bin, self.kdestroy_bin,
                        self.renewal_threshold, self.ticket_lifetime,
                        self.ticket_renewable_lifetime,
-                       self.retry_options, self.ccache_name)
+                       self.retry_options, self.ccache_name,
+                       self.use_per_process_ccache)
 
     def _ccache_name(self):
-        if multiprocessing.current_process().name == 'MainProcess':
-            return os.environ.get('KRB5CCNAME', '/tmp/krb5cc_{}'.format(os.getuid()))
+        if self.use_per_process_ccache:
+            return self._per_process_ccache_name()
+        else:
+            return self._default_ccache_name()
 
-        # For multiprocess application. e.g. gunicorn
+    def _is_main_process(self):
+        return multiprocessing.current_process().name == 'MainProcess'
+
+    def _default_ccache_name(self):
+        return os.environ.get('KRB5CCNAME', '/tmp/krb5cc_{}'.format(os.getuid()))
+
+    @property
+    def ccache_lockfile(self):
+        return '{}.krbticket.lock'.format(self.ccache_name)
+
+    def _per_process_ccache_name(self):
+        if self._is_main_process():
+            return self._default_ccache_name()
+
         new_ccname = "/tmp/krb5cc_{}_{}".format(os.getuid(), os.getpid())
+        # Update KRB5CCNAME for kinit
         os.environ['KRB5CCNAME'] = new_ccname
         logger.info("env KRB5CCNAME is updated to '{}' for multiprocessing".format(new_ccname))
 

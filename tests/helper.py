@@ -34,17 +34,19 @@ def assert_config(c1, c2):
     assert c1.ccache_name == c2.ccache_name
 
 
-def default_config():
-    return KrbConfig(
-        DEFAULT_PRINCIPAL,
-        DEFAULT_KEYTAB,
-        renewal_threshold=timedelta(seconds=DEFAULT_TICKET_RENEWAL_THRESHOLD_SEC),
-        ticket_lifetime=DEFAULT_TICKET_LIFETIME,
-        ticket_renewable_lifetime=DEFAULT_TICKET_RENEWABLE_LIFETIME,
-        retry_options={
+def default_config(**kwargs):
+    default_options = {
+        'principal': DEFAULT_PRINCIPAL,
+        'keytab': DEFAULT_KEYTAB,
+        'renewal_threshold': timedelta(seconds=DEFAULT_TICKET_RENEWAL_THRESHOLD_SEC),
+        'ticket_lifetime': DEFAULT_TICKET_LIFETIME,
+        'ticket_renewable_lifetime': DEFAULT_TICKET_RENEWABLE_LIFETIME,
+        'retry_options': {
             'wait_exponential_multiplier': 100,
             'wait_exponential_max': 1000,
-            'stop_max_attempt_number': 3})
+            'stop_max_attempt_number': 3}
+        }
+    return KrbConfig(**{**default_options, **kwargs})
 
 
 @pytest.fixture

@@ -4,6 +4,8 @@ import logging
 import threading
 import time
 
+import fasteners
+
 from krbticket.command import KrbCommand
 from krbticket.config import KrbConfig
 
@@ -59,6 +61,13 @@ class KrbTicket():
         return KrbTicketUpdater(self, interval=interval)
 
     def maybe_update(self):
+        if self.config.use_per_process_ccache:
+            self._maybe_update()
+        else:
+            with fasteners.InterProcessLock(self.config.ccache_lockfile):
+                self._maybe_update()
+
+    def _maybe_update(self):
         self.reload()
 
         if self.need_reinit():
