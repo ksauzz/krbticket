@@ -40,7 +40,6 @@ def test_commands_without_keytab_env(config):
         pass
 
 
-
 def test_multiprocess_ccache(config):
     KrbCommand.kdestroy(config)
 
@@ -85,6 +84,7 @@ def test_no_retry_when_filenotfound(config, mocker):
         pytest.fail()
     except FileNotFoundError:
         assert patcher.call_count == 1
+
 
 @pytest.mark.parametrize('config,expected', [
     (KrbConfig(

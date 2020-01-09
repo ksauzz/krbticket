@@ -5,6 +5,7 @@ from retrying import retry
 
 logger = logging.getLogger(__name__)
 
+
 class KrbCommand():
     @staticmethod
     def kinit(config):

@@ -28,7 +28,6 @@ class KrbConfig():
         self.retry_options = retry_options
         self.ccache_name = ccache_name if ccache_name else self._ccache_name()
 
-
     def __str__(self):
         super_str = super(KrbConfig, self).__str__()
         return "{}: principal={}, keytab={}, kinit_bin={}," \
@@ -36,12 +35,15 @@ class KrbConfig():
                " renewal_threshold={}, ticket_lifetime={}, " \
                " ticket_renewable_lifetime={}, " \
                " retry_options={}, ccache_name={}, " \
-               .format(super_str, self.principal, self.keytab, self.kinit_bin, self.klist_bin, self.kdestroy_bin, self.renewal_threshold, self.ticket_lifetime, self.ticket_renewable_lifetime, self.retry_options, self.ccache_name)
-
+               .format(super_str, self.principal, self.keytab, self.kinit_bin,
+                       self.klist_bin, self.kdestroy_bin,
+                       self.renewal_threshold, self.ticket_lifetime,
+                       self.ticket_renewable_lifetime,
+                       self.retry_options, self.ccache_name)
 
     def _ccache_name(self):
         if multiprocessing.current_process().name == 'MainProcess':
-            return os.environ.get('KRB5CCNAME', '/tmp/krb5cc_{}'.format(os.getuid()));
+            return os.environ.get('KRB5CCNAME', '/tmp/krb5cc_{}'.format(os.getuid()))
 
         # For multiprocess application. e.g. gunicorn
         new_ccname = "/tmp/krb5cc_{}_{}".format(os.getuid(), os.getpid())

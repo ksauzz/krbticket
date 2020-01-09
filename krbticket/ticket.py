@@ -9,6 +9,7 @@ from krbticket.config import KrbConfig
 
 logger = logging.getLogger(__name__)
 
+
 class NoCredentialFound(Exception):
     pass
 
@@ -99,14 +100,12 @@ class KrbTicket():
         else:
             return self.need_renewal()
 
-
     def __str__(self):
         super_str = super(KrbTicket, self).__str__()
         return "{}: file={}, principal={}, starting={}, expires={}," \
                " service_principal={}, renew_expires={}" \
                .format(super_str, self.file, self.principal, self.starting,
                        self.expires, self.service_principal, self.renew_expires)
-
 
     @staticmethod
     def cache_exists(config):

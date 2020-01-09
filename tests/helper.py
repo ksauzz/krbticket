@@ -33,6 +33,7 @@ def assert_config(c1, c2):
     assert c1.ticket_renewable_lifetime == c2.ticket_renewable_lifetime
     assert c1.ccache_name == c2.ccache_name
 
+
 def default_config():
     return KrbConfig(
         DEFAULT_PRINCIPAL,
