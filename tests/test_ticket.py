@@ -1,4 +1,4 @@
-from krbticket import KrbTicket, KrbCommand
+from krbticket import KrbTicket, KrbCommand, SingleProcessKrbTicketUpdater
 from krbticket.ticket import NoCredentialFound
 from helper import *
 from datetime import datetime
@@ -134,7 +134,11 @@ def test_renewal(config):
     assert ticket.renew_expires > renew_expires
     updater.stop()
 
-@pytest.mark.parametrize('config_str', [ 'default_config()', 'default_config(use_per_process_ccache=False)'])
+@pytest.mark.parametrize('config_str', [
+    'default_config()',
+    'default_config(use_per_process_ccache=False)',
+    'default_config(updater_class=SingleProcessKrbTicketUpdater)'
+])
 def test_multiprocessing_renewal(config_str, caplog):
     KrbCommand.kdestroy(eval(config_str))
     ticket = KrbTicket.init_by_config(eval(config_str))
