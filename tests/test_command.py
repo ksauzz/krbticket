@@ -1,4 +1,5 @@
 from krbticket import KrbConfig, KrbCommand
+from krbticket import MultiProcessKrbTicketUpdater
 from helper import *
 import os
 import subprocess
@@ -61,11 +62,11 @@ def test_multiprocessing_with_per_process_ccache(config):
 
 
 def test_multiprocessing_without_per_process_ccache():
-    config = default_config(use_per_process_ccache=False)
+    config = default_config(updater_class=MultiProcessKrbTicketUpdater)
     KrbCommand.kdestroy(config)
 
     def run():
-        conf = default_config(use_per_process_ccache=False)
+        conf = default_config(updater_class=MultiProcessKrbTicketUpdater)
         assert conf.ccache_name == config.ccache_name
         assert not os.environ.get('KRB5CCNAME')
 

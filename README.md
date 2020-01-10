@@ -22,8 +22,8 @@ If `keytab path` is not specifyed, kinit uses `KRB5_KTNAME` env, or `/etc/krb5.k
 To avoid a credential cache (ccache) corruption by concurrent updates from multiple processes, KrbTicketUpdater has a few update strategies:
 
 - SimpleKrbTicketUpdater: for single updater process, or multiple updaters w/ per process ccache. (default)
-- MultiProcessKrbTicketUpdater: for multiple updater processes w/ exclusive file lock. This is used if `per_process_ccache=False`
-- SingleProcessKrbTicketUpdater: for multiple updater processes w/ exclusive file lock to restrict the number of updater processes to one against the ccache. To use this if `updater_class=SingleProcessKrbTicketUpdater`:
+- MultiProcessKrbTicketUpdater: for multiple updater processes w/ exclusive file lock
+- SingleProcessKrbTicketUpdater: for multiple updater processes w/ exclusive file lock to restrict the number of updater processes to one against the ccache
 
 ```
 from krbticket import KrbTicket, SingleProcessKrbTicketUpdater

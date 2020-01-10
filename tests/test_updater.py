@@ -14,7 +14,11 @@ def test_updater(config):
     time.sleep(2)
     assert not updater.is_alive()
 
-@pytest.mark.parametrize('config', [ default_config(), default_config(use_per_process_ccache=False)])
+@pytest.mark.parametrize('config', [
+    default_config(updater_class=SimpleKrbTicketUpdater),
+    default_config(updater_class=MultiProcessKrbTicketUpdater),
+    default_config(updater_class=SingleProcessKrbTicketUpdater)
+])
 def test_renewal(config):
     """
     This test assumes:

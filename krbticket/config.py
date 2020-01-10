@@ -7,14 +7,15 @@ logger = logging.getLogger(__name__)
 
 
 class KrbConfig():
+    from krbticket.updater import SimpleKrbTicketUpdater
+
     def __init__(self, principal=None, keytab=None, kinit_bin="kinit",
                  klist_bin="klist", kdestroy_bin="kdestroy",
                  renewal_threshold=timedelta(minutes=30),
                  ticket_lifetime=None,
                  ticket_renewable_lifetime=None,
                  ccache_name=None,
-                 use_per_process_ccache=True,
-                 updater_class=None,
+                 updater_class=SimpleKrbTicketUpdater,
                  retry_options={
                      'wait_exponential_multiplier': 1000,
                      'wait_exponential_max': 30000,
@@ -27,8 +28,7 @@ class KrbConfig():
         self.renewal_threshold = renewal_threshold
         self.ticket_lifetime = ticket_lifetime
         self.ticket_renewable_lifetime = ticket_renewable_lifetime
-        self.use_per_process_ccache = use_per_process_ccache
-        self.updater_class = updater_class if updater_class else self._updater_class()
+        self.updater_class = updater_class
         self.retry_options = retry_options
         self.ccache_name = ccache_name if ccache_name else self._ccache_name()
 
@@ -39,18 +39,16 @@ class KrbConfig():
                " renewal_threshold={}, ticket_lifetime={}, " \
                " ticket_renewable_lifetime={}, " \
                " retry_options={}, ccache_name={}, " \
-               " use_per_process_ccache={}" \
                " updater_class={}" \
                .format(super_str, self.principal, self.keytab, self.kinit_bin,
                        self.klist_bin, self.kdestroy_bin,
                        self.renewal_threshold, self.ticket_lifetime,
                        self.ticket_renewable_lifetime,
                        self.retry_options, self.ccache_name,
-                       self.use_per_process_ccache,
                        self.updater_class)
 
     def _ccache_name(self):
-        if self.use_per_process_ccache:
+        if self.updater_class.use_per_process_ccache():
             return self._per_process_ccache_name()
         else:
             return self._default_ccache_name()
@@ -75,12 +73,3 @@ class KrbConfig():
         logger.info("env KRB5CCNAME is updated to '{}' for multiprocessing".format(new_ccname))
 
         return os.environ.get('KRB5CCNAME')
-
-    def _updater_class(self):
-        from krbticket import SimpleKrbTicketUpdater
-        from krbticket import MultiProcessKrbTicketUpdater
-
-        if self.use_per_process_ccache:
-            return SimpleKrbTicketUpdater
-        else:
-            return MultiProcessKrbTicketUpdater
