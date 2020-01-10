@@ -1,5 +1,5 @@
-from krbticket import KrbTicket, KrbCommand, SingleProcessKrbTicketUpdater
-from krbticket.ticket import NoCredentialFound
+from krbticket import KrbTicket, KrbCommand, NoCredentialFound
+from krbticket import SimpleKrbTicketUpdater, SingleProcessKrbTicketUpdater, MultiProcessKrbTicketUpdater
 from helper import *
 from datetime import datetime
 import time
@@ -105,8 +105,8 @@ def test_renewal(config):
     """
     This test assumes:
     - 1 sec renewal threshold
-    - 2 sec ticket lifetime
-    - 4 sed renewal ticket lifetime
+    - 4 sec ticket lifetime
+    - 8 sed renewal ticket lifetime
     """
     KrbCommand.kdestroy(config)
     ticket = KrbTicket.init_by_config(config)
@@ -119,7 +119,7 @@ def test_renewal(config):
     updater.start()
 
     # expect ticket renewal
-    time.sleep(2)
+    time.sleep(DEFAULT_TICKET_LIFETIME_SEC + DEFAULT_TICKET_RENEWAL_THRESHOLD_SEC)
     assert ticket.starting > starting
     assert ticket.expires > expires
     assert ticket.renew_expires == renew_expires
@@ -128,15 +128,15 @@ def test_renewal(config):
     expires = ticket.expires
 
     # expect ticket re-initialize
-    time.sleep(2)
+    time.sleep(DEFAULT_TICKET_RENEWABLE_LIFETIME_SEC - DEFAULT_TICKET_LIFETIME_SEC + DEFAULT_TICKET_RENEWAL_THRESHOLD_SEC)
     assert ticket.starting > starting
     assert ticket.expires > expires
     assert ticket.renew_expires > renew_expires
     updater.stop()
 
 @pytest.mark.parametrize('config_str', [
-    'default_config()',
-    'default_config(use_per_process_ccache=False)',
+    'default_config(updater_class=SimpleKrbTicketUpdater)',
+    'default_config(updater_class=MultiProcessKrbTicketUpdater)',
     'default_config(updater_class=SingleProcessKrbTicketUpdater)'
 ])
 def test_multiprocessing_renewal(config_str, caplog):
@@ -147,8 +147,8 @@ def test_multiprocessing_renewal(config_str, caplog):
         """
         This test assumes:
         - 1 sec renewal threshold
-        - 2 sec ticket lifetime
-        - 4 sed renewal ticket lifetime
+        - 4 sec ticket lifetime
+        - 8 sed renewal ticket lifetime
         """
 
         starting = ticket.starting
@@ -159,7 +159,10 @@ def test_multiprocessing_renewal(config_str, caplog):
         updater.start()
 
         # expect ticket renewal
-        time.sleep(2)
+        time.sleep(DEFAULT_TICKET_LIFETIME_SEC + DEFAULT_TICKET_RENEWAL_THRESHOLD_SEC)
+        if 'SingleProcessKrbTicketUpdater' in config_str:
+            # needs manual reload since SingleProcessTicketUpdater is stopped
+            ticket.reload()
         assert ticket.starting > starting
         assert ticket.expires > expires
         assert ticket.renew_expires == renew_expires
@@ -168,7 +171,10 @@ def test_multiprocessing_renewal(config_str, caplog):
         expires = ticket.expires
 
         # expect ticket re-initialize
-        time.sleep(2)
+        time.sleep(DEFAULT_TICKET_RENEWABLE_LIFETIME_SEC - DEFAULT_TICKET_LIFETIME_SEC + DEFAULT_TICKET_RENEWAL_THRESHOLD_SEC)
+        if 'SingleProcessKrbTicketUpdater' in config_str:
+            # needs manual reload since SingleProcessTicketUpdater is stopped
+            ticket.reload()
         assert ticket.starting > starting
         assert ticket.expires > expires
         assert ticket.renew_expires > renew_expires
