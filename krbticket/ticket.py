@@ -1,42 +1,16 @@
 import os
 from datetime import datetime
 import logging
-import threading
-import time
 
 from krbticket.command import KrbCommand
 from krbticket.config import KrbConfig
+from krbticket.updater import KrbTicketUpdater
 
 logger = logging.getLogger(__name__)
 
+
 class NoCredentialFound(Exception):
     pass
-
-
-class KrbTicketUpdater(threading.Thread):
-    DEFAULT_INTERVAL = 60 * 10
-
-    def __init__(self, ticket, interval=DEFAULT_INTERVAL):
-        super(KrbTicketUpdater, self).__init__()
-
-        self.ticket = ticket
-        self.interval = interval
-        self.stop_event = threading.Event()
-        self.daemon = True
-
-    def run(self):
-        logger.info("Ticket updater start...")
-        while True:
-            if self.stop_event.is_set():
-                return
-
-            logger.debug("Trying to update ticket...")
-            self.ticket.maybe_update()
-            time.sleep(self.interval)
-
-    def stop(self):
-        logger.debug("Stopping ticket updater...")
-        self.stop_event.set()
 
 
 class KrbTicket():
@@ -55,7 +29,7 @@ class KrbTicket():
         self.updater(interval=interval).start()
 
     def updater(self, interval=KrbTicketUpdater.DEFAULT_INTERVAL):
-        return KrbTicketUpdater(self, interval=interval)
+        return self.config.updater_class(self, interval=interval)
 
     def maybe_update(self):
         self.reload()
@@ -99,14 +73,12 @@ class KrbTicket():
         else:
             return self.need_renewal()
 
-
     def __str__(self):
         super_str = super(KrbTicket, self).__str__()
         return "{}: file={}, principal={}, starting={}, expires={}," \
                " service_principal={}, renew_expires={}" \
                .format(super_str, self.file, self.principal, self.starting,
                        self.expires, self.service_principal, self.renew_expires)
-
 
     @staticmethod
     def cache_exists(config):

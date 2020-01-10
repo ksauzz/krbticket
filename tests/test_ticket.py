@@ -1,8 +1,6 @@
-from krbticket import KrbTicket, KrbCommand
-from krbticket.ticket import NoCredentialFound
+from krbticket import KrbTicket, KrbCommand, NoCredentialFound
 from helper import *
 from datetime import datetime
-import time
 import os
 import subprocess
 
@@ -88,50 +86,6 @@ def test_ticket(config):
     assert ticket.expires
     assert ticket.service_principal
     assert ticket.renew_expires
-
-
-def test_updater(config):
-    KrbCommand.kdestroy(config)
-    ticket = KrbTicket.init_by_config(config)
-    updater = ticket.updater(interval=1)
-    updater.start()
-    updater.stop()
-    time.sleep(2)
-    assert not updater.is_alive()
-
-
-def test_renewal(config):
-    """
-    This test assumes:
-    - 1 sec renewal threshold
-    - 2 sec ticket lifetime
-    - 4 sed renewal ticket lifetime
-    """
-    KrbCommand.kdestroy(config)
-    ticket = KrbTicket.init_by_config(config)
-
-    starting = ticket.starting
-    expires = ticket.expires
-    renew_expires = ticket.renew_expires
-
-    updater = ticket.updater(interval=0.5)
-    updater.start()
-
-    # expect ticket renewal
-    time.sleep(2)
-    assert ticket.starting > starting
-    assert ticket.expires > expires
-    assert ticket.renew_expires == renew_expires
-
-    starting = ticket.starting
-    expires = ticket.expires
-
-    # expect ticket re-initialize
-    time.sleep(2)
-    assert ticket.starting > starting
-    assert ticket.expires > expires
-    assert ticket.renew_expires > renew_expires
-    updater.stop()
 
 
 def test_parse_klist_output(config):
