@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 import logging
+import threading
 
 from krbticket.command import KrbCommand
 from krbticket.config import KrbConfig
@@ -14,6 +15,10 @@ class NoCredentialFound(Exception):
 
 
 class KrbTicket():
+
+    __instances__ = {}
+    __instances_lock__ = threading.Lock()
+
     def __init__(self, config=None, file=None, principal=None, starting=None, expires=None,
                  service_principal=None, renew_expires=None):
 
@@ -24,12 +29,19 @@ class KrbTicket():
         self.expires = expires
         self.service_principal = service_principal
         self.renew_expires = renew_expires
+        self._updater = None
+        self._updater_lock = threading.RLock()
 
     def updater_start(self, interval=KrbTicketUpdater.DEFAULT_INTERVAL):
-        self.updater(interval=interval).start()
+        with self._updater_lock:
+            updater = self.updater(interval=interval)
+            updater.start()
 
     def updater(self, interval=KrbTicketUpdater.DEFAULT_INTERVAL):
-        return self.config.updater_class(self, interval=interval)
+        with self._updater_lock:
+            if not self._updater:
+                self._updater = self.config.updater_class(self, interval=interval)
+        return self._updater
 
     def maybe_update(self):
         self.reload()
@@ -39,6 +51,9 @@ class KrbTicket():
 
         elif self.need_renewal():
             self.renewal()
+
+    def update(self, **kwargs):
+        self.__dict__.update(**kwargs)
 
     def renewal(self):
         logger.info("Renewing ticket for {}...".format(self.principal))
@@ -53,14 +68,7 @@ class KrbTicket():
     def reload(self):
         logger.debug(
             "Reloading ticket attributes from {}...".format(self.file))
-
-        new_ticket = KrbTicket.get_by_config(self.config)
-        self.file = new_ticket.file
-        self.principal = new_ticket.principal
-        self.starting = new_ticket.starting
-        self.expires = new_ticket.expires
-        self.service_principal = new_ticket.service_principal
-        self.renew_expires = new_ticket.renew_expires
+        KrbTicket.get_by_config(self.config)
         logger.debug(
             "Reloaded ticket attributes: {}...".format(self))
 
@@ -79,6 +87,16 @@ class KrbTicket():
                " service_principal={}, renew_expires={}" \
                .format(super_str, self.file, self.principal, self.starting,
                        self.expires, self.service_principal, self.renew_expires)
+
+    @staticmethod
+    def get_instance(**kwargs):
+        ccache_name = kwargs.get('config').ccache_name
+        with KrbTicket.__instances_lock__:
+            if ccache_name not in KrbTicket.__instances__:
+                KrbTicket.__instances__.update({ccache_name: KrbTicket(**kwargs)})
+        ticket = KrbTicket.__instances__.get(ccache_name)
+        ticket.update(**kwargs)
+        return ticket
 
     @staticmethod
     def cache_exists(config):
@@ -117,7 +135,7 @@ class KrbTicket():
     @staticmethod
     def parse_from_klist(config, output):
         if not output:
-            return KrbTicket(config)
+            return KrbTicket.get_instance(config=config)
 
         lines = output.splitlines()
         file = lines[0].split(':')[2]
@@ -132,11 +150,11 @@ class KrbTicket():
             if str:
                 return datetime.strptime(str, '%m/%d/%y %H:%M:%S')
 
-        return KrbTicket(
-            config,
-            file,
-            principal,
-            parseDatetime(starting),
-            parseDatetime(expires),
-            service_principal,
-            parseDatetime(renew_expires))
+        return KrbTicket.get_instance(
+            config=config,
+            file=file,
+            principal=principal,
+            starting=parseDatetime(starting),
+            expires=parseDatetime(expires),
+            service_principal=service_principal,
+            renew_expires=parseDatetime(renew_expires))
