@@ -75,11 +75,24 @@ def test_get(config):
                 'wait_exponential_max': 1000,
                 'stop_max_attempt_number': 3}))
 
+def test_object_uniqueness(config):
+    KrbCommand.kdestroy(config)
+    ticket0 = KrbTicket.init_by_config(config)
+    ticket1 = KrbTicket.init_by_config(config)
+    ticket2 = KrbTicket.get_by_config(config)
+
+    config.ccache_name = '/tmp/krb5cc_{}'.format('dummy')
+    ticket3 = KrbTicket.init_by_config(config)
+
+    assert ticket0 == ticket1
+    assert ticket0 == ticket2
+    assert ticket0 != ticket3
+    KrbCommand.kdestroy(config)
 
 def test_ticket(config):
     KrbCommand.kdestroy(config)
     ticket = KrbTicket.init_by_config(config)
-    assert ticket.config == config
+    assert_config(ticket.config, config)
     assert ticket.file
     assert ticket.principal == 'user@EXAMPLE.COM'
     assert ticket.starting

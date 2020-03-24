@@ -28,6 +28,13 @@ class KrbTicketUpdater(threading.Thread):
             self.update()
             time.sleep(self.interval)
 
+    def start(self):
+        if self.is_alive():
+            logger.debug("Skipping Thread.start() since it already started...")
+            return
+
+        super().start()
+
     def update(self):
         raise NotImplementedError
 
