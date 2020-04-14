@@ -1,3 +1,4 @@
+import fasteners
 import logging
 import os
 import subprocess
@@ -77,4 +78,5 @@ class KrbCommand():
             custom_env["LC_ALL"] = "C"
             return subprocess.check_output(commands, universal_newlines=True, env=custom_env)
 
-        return retriable_call()
+        with fasteners.InterProcessLock(config.ccache_cmd_lockfile):
+            return retriable_call()

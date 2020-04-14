@@ -70,8 +70,7 @@ class MultiProcessKrbTicketUpdater(KrbTicketUpdater):
     KrbTicketUpdater w/ exclusive lock for a ccache
     """
     def update(self):
-        with fasteners.InterProcessLock(self.ticket.config.ccache_lockfile):
-            self.ticket.maybe_update()
+        self.ticket.maybe_update()
 
     @staticmethod
     def use_per_process_ccache():

@@ -63,6 +63,10 @@ class KrbConfig():
     def ccache_lockfile(self):
         return '{}.krbticket.lock'.format(self.ccache_name)
 
+    @property
+    def ccache_cmd_lockfile(self):
+        return '{}.krbticket.cmd.lock'.format(self.ccache_name)
+
     def _per_process_ccache_name(self):
         if self._is_main_process():
             return self._default_ccache_name()
