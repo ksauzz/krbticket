@@ -17,6 +17,7 @@ class KrbTicketUpdater(threading.Thread):
         self.interval = interval
         self.stop_event = threading.Event()
         self.daemon = True
+        self.start_lock = threading.Lock()
 
     def run(self):
         logger.info("{} start...".format(self.__class__.__name__))
@@ -29,11 +30,12 @@ class KrbTicketUpdater(threading.Thread):
             time.sleep(self.interval)
 
     def start(self):
-        if self.is_alive():
-            logger.debug("Skipping Thread.start() since it already started...")
-            return
+        with self.start_lock:
+            if self.is_alive():
+                logger.debug("Skipping Thread.start() since it already started...")
+                return
 
-        super().start()
+            super().start()
 
     def update(self):
         raise NotImplementedError
