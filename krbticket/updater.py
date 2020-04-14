@@ -35,6 +35,10 @@ class KrbTicketUpdater(threading.Thread):
                 logger.debug("Skipping Thread.start() since it already started...")
                 return
 
+            if self.stop_event.is_set():
+                logger.debug("Skipping Thread.start() since it already stopped...")
+                return
+
             super().start()
 
     @staticmethod
@@ -75,7 +79,7 @@ class SingleProcessKrbTicketUpdater(KrbTicketUpdater):
     Single Process KrbTicketUpdater on the system.
     Multiple updaters can start, but they immediately stops if a updater is already running on the system.
     """
-    def run(self):
+    def start(self):
         lock = fasteners.InterProcessLock(self.ticket.config.ccache_lockfile)
         got_lock = lock.acquire(blocking=False)
         if not got_lock:
@@ -84,7 +88,7 @@ class SingleProcessKrbTicketUpdater(KrbTicketUpdater):
 
         logger.debug("Got lock: {}...".format(self.ticket.config.ccache_lockfile))
         try:
-            super().run()
+            super().start()
         finally:
             if got_lock:
                 lock.release()

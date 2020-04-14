@@ -31,8 +31,8 @@ def test_reuse_updater(config):
     updater.stop()
     time.sleep(2)
     assert not updater.is_alive()
-    with pytest.raises(RuntimeError):
-        updater.start()
+    updater.start()
+    assert not updater.is_alive()
 
 
 def test_updater_start(config):
