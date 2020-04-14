@@ -26,7 +26,7 @@ class KrbTicketUpdater(threading.Thread):
                 return
 
             logger.debug("Trying to update ticket...")
-            self.update()
+            self.ticket.maybe_update()
             time.sleep(self.interval)
 
     def start(self):
@@ -36,9 +36,6 @@ class KrbTicketUpdater(threading.Thread):
                 return
 
             super().start()
-
-    def update(self):
-        raise NotImplementedError
 
     @staticmethod
     def use_per_process_ccache():
@@ -55,9 +52,6 @@ class SimpleKrbTicketUpdater(KrbTicketUpdater):
 
     Using this with multiprocessing, child processes uses dedicated ccache file
     """
-    def update(self):
-        self.ticket.maybe_update()
-
     @staticmethod
     def use_per_process_ccache():
         return True
@@ -69,9 +63,6 @@ class MultiProcessKrbTicketUpdater(KrbTicketUpdater):
 
     KrbTicketUpdater w/ exclusive lock for a ccache
     """
-    def update(self):
-        self.ticket.maybe_update()
-
     @staticmethod
     def use_per_process_ccache():
         return False
@@ -98,9 +89,6 @@ class SingleProcessKrbTicketUpdater(KrbTicketUpdater):
             if got_lock:
                 lock.release()
                 logger.debug("Released lock: {}...".format(self.ticket.config.ccache_lockfile))
-
-    def update(self):
-        self.ticket.maybe_update()
 
     @staticmethod
     def use_per_process_ccache():
