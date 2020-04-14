@@ -31,6 +31,8 @@ class KrbConfig():
         self.updater_class = updater_class
         self.retry_options = retry_options
         self.ccache_name = ccache_name if ccache_name else self._ccache_name()
+        self.ccache_lockfile = '{}.krbticket.lock'.format(self.ccache_name)
+        self.ccache_cmd_lockfile = '{}.krbticket.cmd.lock'.format(self.ccache_name)
 
     def __str__(self):
         super_str = super(KrbConfig, self).__str__()
@@ -58,14 +60,6 @@ class KrbConfig():
 
     def _default_ccache_name(self):
         return os.environ.get('KRB5CCNAME', '/tmp/krb5cc_{}'.format(os.getuid()))
-
-    @property
-    def ccache_lockfile(self):
-        return '{}.krbticket.lock'.format(self.ccache_name)
-
-    @property
-    def ccache_cmd_lockfile(self):
-        return '{}.krbticket.cmd.lock'.format(self.ccache_name)
 
     def _per_process_ccache_name(self):
         if self._is_main_process():
