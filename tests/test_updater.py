@@ -4,7 +4,7 @@ from helper import *
 import time
 import pytest
 from multiprocessing import Process
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 
 def teardown_function(function):
@@ -166,3 +166,38 @@ def test_single_thread_updater_in_multithreading(config_str, caplog):
     for future in [executor.submit(run) for i in range(10)]:
         future.result()
 
+
+@pytest.mark.parametrize('config_str', [
+    'default_config(updater_class=SimpleKrbTicketUpdater)',
+    'default_config(updater_class=MultiProcessKrbTicketUpdater)',
+    'default_config(updater_class=SingleProcessKrbTicketUpdater)'
+])
+def test_skip_subsequent_updater_start_with_multithreading(config_str, caplog):
+    KrbCommand.kdestroy(eval(config_str))
+    KrbTicket.init_by_config(eval(config_str))
+
+    # Subsequent updater.start should be skipped.
+    executor = ThreadPoolExecutor(max_workers=5)
+    for future in [executor.submit(_updater_run, eval(config_str)) for i in range(10)]:
+        future.result()
+
+
+@pytest.mark.parametrize('config_str', [
+    'default_config(updater_class=SimpleKrbTicketUpdater)',
+    'default_config(updater_class=MultiProcessKrbTicketUpdater)',
+    'default_config(updater_class=SingleProcessKrbTicketUpdater)'
+])
+def test_skip_subsequent_updater_start_with_multiprocessing(config_str, caplog):
+    KrbCommand.kdestroy(eval(config_str))
+    KrbTicket.init_by_config(eval(config_str))
+    # Subsequent updater.start should be skipped.
+    executor = ProcessPoolExecutor(max_workers=5)
+    for future in [executor.submit(_updater_run, eval(config_str)) for i in range(10)]:
+        future.result()
+
+
+def _updater_run(config):
+    ticket = KrbTicket.init_by_config(config)
+    updater = ticket.updater(interval=0.5)
+    updater.start()
+    updater.start()
