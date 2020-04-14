@@ -5,6 +5,6 @@ __pycache__
 venv
 *.pyc
 .venv
-.coverage
+.coverage*
 htmlcov
 .eggs
