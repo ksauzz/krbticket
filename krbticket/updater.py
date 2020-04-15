@@ -17,6 +17,7 @@ class KrbTicketUpdater(threading.Thread):
         self.interval = interval
         self.stop_event = threading.Event()
         self.daemon = True
+        self.start_lock = threading.Lock()
 
     def run(self):
         logger.info("{} start...".format(self.__class__.__name__))
@@ -25,18 +26,20 @@ class KrbTicketUpdater(threading.Thread):
                 return
 
             logger.debug("Trying to update ticket...")
-            self.update()
+            self.ticket.maybe_update()
             time.sleep(self.interval)
 
     def start(self):
-        if self.is_alive():
-            logger.debug("Skipping Thread.start() since it already started...")
-            return
+        with self.start_lock:
+            if self.is_alive():
+                logger.debug("Skipping Thread.start() since it already started...")
+                return
 
-        super().start()
+            if self.stop_event.is_set():
+                logger.debug("Skipping Thread.start() since it already stopped...")
+                return
 
-    def update(self):
-        raise NotImplementedError
+            super().start()
 
     @staticmethod
     def use_per_process_ccache():
@@ -53,9 +56,6 @@ class SimpleKrbTicketUpdater(KrbTicketUpdater):
 
     Using this with multiprocessing, child processes uses dedicated ccache file
     """
-    def update(self):
-        self.ticket.maybe_update()
-
     @staticmethod
     def use_per_process_ccache():
         return True
@@ -67,10 +67,6 @@ class MultiProcessKrbTicketUpdater(KrbTicketUpdater):
 
     KrbTicketUpdater w/ exclusive lock for a ccache
     """
-    def update(self):
-        with fasteners.InterProcessLock(self.ticket.config.ccache_lockfile):
-            self.ticket.maybe_update()
-
     @staticmethod
     def use_per_process_ccache():
         return False
@@ -83,7 +79,7 @@ class SingleProcessKrbTicketUpdater(KrbTicketUpdater):
     Single Process KrbTicketUpdater on the system.
     Multiple updaters can start, but they immediately stops if a updater is already running on the system.
     """
-    def run(self):
+    def start(self):
         lock = fasteners.InterProcessLock(self.ticket.config.ccache_lockfile)
         got_lock = lock.acquire(blocking=False)
         if not got_lock:
@@ -92,14 +88,11 @@ class SingleProcessKrbTicketUpdater(KrbTicketUpdater):
 
         logger.debug("Got lock: {}...".format(self.ticket.config.ccache_lockfile))
         try:
-            super().run()
+            super().start()
         finally:
             if got_lock:
                 lock.release()
                 logger.debug("Released lock: {}...".format(self.ticket.config.ccache_lockfile))
-
-    def update(self):
-        self.ticket.maybe_update()
 
     @staticmethod
     def use_per_process_ccache():
