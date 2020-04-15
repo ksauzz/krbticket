@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 import logging
 import threading
@@ -81,9 +80,6 @@ class KrbTicket():
         else:
             return self.need_renewal()
 
-    def destroy(self):
-        KrbCommand.kdestroy(self.config)
-
     def __str__(self):
         super_str = super(KrbTicket, self).__str__()
         return "{}: file={}, principal={}, starting={}, expires={}," \
@@ -103,7 +99,7 @@ class KrbTicket():
 
     @staticmethod
     def cache_exists(config):
-        return os.path.isfile(config.ccache_name)
+        return KrbCommand.cache_exists(config)
 
     @staticmethod
     def init(principal, keytab=None, **kwargs):
@@ -172,5 +168,5 @@ class KrbTicket():
         with KrbTicket.__instances_lock__:
             for (key, ticket) in KrbTicket.__instances__.items():
                 ticket.updater().stop()
-                ticket.destroy()
+                KrbCommand.kdestroy(ticket.config)
             KrbTicket.__instances__ = {}

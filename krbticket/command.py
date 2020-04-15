@@ -60,6 +60,11 @@ class KrbCommand():
         return KrbCommand._call(config, commands)
 
     @staticmethod
+    def cache_exists(config):
+        with fasteners.InterProcessLock(config.ccache_cmd_lockfile):
+            return os.path.isfile(config.ccache_name)
+
+    @staticmethod
     def _call(config, commands):
 
         def error_on_retry(exception):
