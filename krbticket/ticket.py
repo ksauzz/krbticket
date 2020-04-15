@@ -81,6 +81,9 @@ class KrbTicket():
         else:
             return self.need_renewal()
 
+    def destroy(self):
+        KrbCommand.kdestroy(self.config)
+
     def __str__(self):
         super_str = super(KrbTicket, self).__str__()
         return "{}: file={}, principal={}, starting={}, expires={}," \
@@ -158,3 +161,16 @@ class KrbTicket():
             expires=parseDatetime(expires),
             service_principal=service_principal,
             renew_expires=parseDatetime(renew_expires))
+
+    @staticmethod
+    def _destroy():
+        """
+        destroy internal ticket registry
+
+        stop all updaters belonging to a ticket registered in registry, and remove all entiries
+        """
+        with KrbTicket.__instances_lock__:
+            for (key, ticket) in KrbTicket.__instances__.items():
+                ticket.updater().stop()
+                ticket.destroy()
+            KrbTicket.__instances__ = {}
