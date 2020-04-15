@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 
 def teardown_function(function):
-    KrbTicket.__instances__ = {}
+    KrbTicket._destroy()
 
 
 def test_updater(config):

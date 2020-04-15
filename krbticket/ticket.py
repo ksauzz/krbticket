@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 import logging
 import threading
@@ -100,7 +99,7 @@ class KrbTicket():
 
     @staticmethod
     def cache_exists(config):
-        return os.path.isfile(config.ccache_name)
+        return KrbCommand.cache_exists(config)
 
     @staticmethod
     def init(principal, keytab=None, **kwargs):
@@ -158,3 +157,16 @@ class KrbTicket():
             expires=parseDatetime(expires),
             service_principal=service_principal,
             renew_expires=parseDatetime(renew_expires))
+
+    @staticmethod
+    def _destroy():
+        """
+        destroy internal ticket registry
+
+        stop all updaters belonging to a ticket registered in registry, and remove all entiries
+        """
+        with KrbTicket.__instances_lock__:
+            for (key, ticket) in KrbTicket.__instances__.items():
+                ticket.updater().stop()
+                KrbCommand.kdestroy(ticket.config)
+            KrbTicket.__instances__ = {}

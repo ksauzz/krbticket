@@ -2,9 +2,13 @@ import fasteners
 import logging
 import os
 import subprocess
+import threading
 from retrying import retry
 
 logger = logging.getLogger(__name__)
+# fasteners is for interprocess multiprocessing
+# threading.Lock is for multithreading
+lock = threading.Lock()
 
 
 class KrbCommand():
@@ -60,6 +64,12 @@ class KrbCommand():
         return KrbCommand._call(config, commands)
 
     @staticmethod
+    def cache_exists(config):
+        with lock:
+            with fasteners.InterProcessLock(config.ccache_cmd_lockfile):
+                return os.path.isfile(config.ccache_name)
+
+    @staticmethod
     def _call(config, commands):
 
         def error_on_retry(exception):
@@ -78,5 +88,6 @@ class KrbCommand():
             custom_env["LC_ALL"] = "C"
             return subprocess.check_output(commands, universal_newlines=True, env=custom_env)
 
-        with fasteners.InterProcessLock(config.ccache_cmd_lockfile):
-            return retriable_call()
+        with lock:
+            with fasteners.InterProcessLock(config.ccache_cmd_lockfile):
+                return retriable_call()

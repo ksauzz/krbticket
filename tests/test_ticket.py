@@ -4,6 +4,9 @@ from datetime import datetime
 import os
 import subprocess
 
+def teardown_function(function):
+    KrbTicket._destroy()
+
 
 def test_init(config):
     KrbCommand.kdestroy(config)
