@@ -76,9 +76,12 @@ class KrbTicket():
 
     def need_reinit(self):
         if self.renew_expires:
-            return self.renew_expires < self.config.renewal_threshold + datetime.now()
+            return self.expired() or self.renew_expires < self.config.renewal_threshold + datetime.now()
         else:
             return self.need_renewal()
+
+    def expired(self):
+        return self.expires <= datetime.now()
 
     def __str__(self):
         super_str = super(KrbTicket, self).__str__()
