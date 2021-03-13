@@ -37,7 +37,7 @@ ticket.updater_start()
 krbticket supports retry feature utilizing [retrying](https://github.com/rholder/retrying) which provides various retry strategy. To change the behavior, pass the options using `retry_options` of KrbConfig. The dafault values are:
 
 - wait_exponential_multiplier = 1000
-- wait_exponential_multiplier = 30000
+- wait_exponential_max = 30000
 - stop_max_attempt_number = 10
 
 ```
@@ -45,7 +45,7 @@ from krbticket import KrbTicket
 
 retry_options = {
   'wait_exponential_multiplier': 1000,
-  'wait_exponential_multiplier': 10000,
+  'wait_exponential_max': 10000,
   'stop_max_attempt_number': 5
 }
 ticket = KrbTicket.init("<principal>", "<keytab path>", retry_options=retry_options)
