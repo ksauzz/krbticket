@@ -1,6 +1,7 @@
 from krbticket import KrbTicket, KrbCommand, NoCredentialFound
 from helper import *
 from datetime import datetime
+from freezegun import freeze_time
 import os
 import subprocess
 
@@ -119,3 +120,43 @@ Valid starting     Expires            Service principal
     assert ticket.starting == datetime(2019, 11, 22, 0, 23, 10)
     assert ticket.expires == datetime(2019, 11, 22, 0, 23, 12)
     assert ticket.renew_expires == datetime(2019, 12, 20, 0, 23, 10)
+
+@freeze_time("2019-11-20 00:00:00")
+def test_expires(config):
+    ticket = KrbTicket(
+            config,
+            starting = datetime(2019, 11, 10, 0, 0, 0),
+            expires = datetime(2019, 11, 21, 0, 0, 0),
+            renew_expires = datetime(2019, 11, 24, 0, 0, 0),
+            )
+    assert ticket.is_expired() == False;
+    assert ticket.is_renewalable() == True;
+
+    ticket = KrbTicket(
+            config,
+            starting = datetime(2019, 11, 10, 0, 0, 0),
+            expires = datetime(2019, 11, 21, 0, 0, 0),
+            renew_expires = None,
+            )
+    assert ticket.is_expired() == False;
+    assert ticket.is_renewalable() == False;
+
+    ticket = KrbTicket(
+            config,
+            starting = datetime(2019, 11, 10, 0, 0, 0),
+            expires = datetime(2019, 11, 19, 0, 0, 0),
+            renew_expires = datetime(2019, 11, 24, 0, 0, 0),
+            )
+    assert ticket.is_expired() == True;
+    assert ticket.is_renewalable() == True;
+
+    ticket = KrbTicket(
+            config,
+            starting = datetime(2019, 11, 10, 0, 0, 0),
+            expires = datetime(2019, 11, 15, 0, 0, 0),
+            renew_expires = datetime(2019, 11, 19, 0, 0, 0),
+            )
+    assert ticket.is_expired() == True;
+    assert ticket.is_renewalable() == False;
+
+
