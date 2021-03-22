@@ -45,11 +45,11 @@ class KrbTicket():
     def maybe_update(self):
         self.reload()
 
-        if self.need_reinit():
-            self.reinit()
-
-        elif self.need_renewal():
-            self.renewal()
+        if self.is_expired():
+            if self.is_renewalable():
+                self.renewal()
+            else:
+                self.reinit()
 
     def update(self, **kwargs):
         self.__dict__.update(**kwargs)
@@ -71,14 +71,14 @@ class KrbTicket():
         logger.debug(
             "Reloaded ticket attributes: {}...".format(self))
 
-    def need_renewal(self):
+    def is_expired(self):
         return self.expires < self.config.renewal_threshold + datetime.now()
 
-    def need_reinit(self):
+    def is_renewalable(self):
         if self.renew_expires:
-            return self.renew_expires < self.config.renewal_threshold + datetime.now()
+            return self.renew_expires > self.config.renewal_threshold + datetime.now()
         else:
-            return self.need_renewal()
+            return False
 
     def __str__(self):
         super_str = super(KrbTicket, self).__str__()
