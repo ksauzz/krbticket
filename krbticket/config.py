@@ -2,7 +2,6 @@ from datetime import timedelta
 import logging
 import multiprocessing
 import os
-
 logger = logging.getLogger(__name__)
 
 
@@ -20,7 +19,6 @@ class KrbConfig():
                      'wait_exponential_multiplier': 1000,
                      'wait_exponential_max': 30000,
                      'stop_max_attempt_number': 10}):
-        self.principal = principal
         self.keytab = keytab
         self.kinit_bin = kinit_bin
         self.klist_bin = klist_bin
@@ -33,6 +31,10 @@ class KrbConfig():
         self.ccache_name = ccache_name if ccache_name else self._ccache_name()
         self.ccache_lockfile = '{}.krbticket.lock'.format(self.ccache_name)
         self.ccache_cmd_lockfile = '{}.krbticket.cmd.lock'.format(self.ccache_name)
+        if principal is None and keytab is not None:
+            self.principal = _get_first_principal_from_keytab()
+        else:
+            self.principal = principal
 
     def __str__(self):
         super_str = super(KrbConfig, self).__str__()
@@ -71,3 +73,21 @@ class KrbConfig():
         logger.info("env KRB5CCNAME is updated to '{}' for multiprocessing".format(new_ccname))
 
         return os.environ.get('KRB5CCNAME')
+
+    def _get_first_principal_from_keytab()
+        from krbticket.commands import KrbCommand
+        commands = []
+        commands.append(self.klist_bin)
+        commands.append("-k")
+        commands.append(self.keytab)
+
+        klistFromKeytabRows = KrbCommand._call(config, commands).splitlines()
+
+        if len(klistFromKeytabRows) >= 5:
+            principals = list()
+            for rowIndex in range(3,len(klistFromKeytabRows)-1):
+                principals.append(klistFromKeytabRows[rowIndex].strip().split(" ")[1])
+            if len(principals) >= 1:
+                return principals[0]
+        else:
+            return None
